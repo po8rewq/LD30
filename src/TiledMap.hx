@@ -21,9 +21,12 @@ class TiledMap extends EntityContainer
 
     public var boxesSpots(default, null) : Array<Dynamic>;
     public var picsSpots(default, null) : Array<Dynamic>;
+    public var switchs(default, null) : Array<Dynamic>;
+    public var gates(default, null) : Array<Dynamic>;
+    public var potions(default, null) : Array<Dynamic>;
 
-    public var player1 : Point2D;
-    public var player2 : Point2D;
+    public var player1 : Dynamic;
+    public var player2 : Dynamic;
 
     public var door : Point2D;
 
@@ -60,9 +63,12 @@ class TiledMap extends EntityContainer
             }
         }
 
-        // Récupération des points de spawn // TODO: faire ça plus proprement
+        // Récupération des points de spawn
         boxesSpots = new Array();
         picsSpots = new Array();
+        potions = new Array();
+        switchs = new Array();
+        gates = new Array();
 
         var spawnData : Array<Dynamic> = Reflect.field(json, "layers")[1].objects;
         for(spawn in spawnData)
@@ -72,7 +78,7 @@ class TiledMap extends EntityContainer
                 boxesSpots.push({
                     x: Math.round(spawn.x), 
                     y: Math.round(spawn.y),
-                    inverted: spawn.type == "inverted" ? true : false
+                    inverted: spawn.type == "inverted"
                 });
             }
             else if(spawn.name == "pic")
@@ -80,21 +86,24 @@ class TiledMap extends EntityContainer
                 picsSpots.push({
                     x: Math.round(spawn.x), 
                     y: Math.round(spawn.y),
-                    inverted: spawn.type == "inverted" ? true : false
+                    position: spawn.properties.position,
+                    inverted: spawn.type == "inverted"
                 });
             }
             else if(spawn.name == "P1")
             {
                 player1 = {
                     x: Math.round(spawn.x), 
-                    y: Math.round(spawn.y)
+                    y: Math.round(spawn.y),
+                    inverted: spawn.type == "inverted"
                 };
             }
             else if(spawn.name == "P2")
             {
                 player2 = {
                     x: Math.round(spawn.x), 
-                    y: Math.round(spawn.y)
+                    y: Math.round(spawn.y),
+                    inverted: spawn.type == "inverted"
                 };
             }
             else if(spawn.name == "door")
@@ -103,6 +112,33 @@ class TiledMap extends EntityContainer
                     x: Math.round(spawn.x), 
                     y: Math.round(spawn.y)
                 };
+            }
+            else if(spawn.name == "gate")
+            {
+                gates.push({
+                    x: Math.round(spawn.x), 
+                    y: Math.round(spawn.y),
+                    id: spawn.properties.id,
+                    inverted: spawn.type == "inverted",
+                    visible: spawn.properties.visible == null || spawn.properties.visible == "true"
+                });
+            }
+            else if(spawn.name == "switch")
+            {
+                switchs.push({
+                    x: Math.round(spawn.x), 
+                    y: Math.round(spawn.y),
+                    inverted: spawn.type == "inverted",
+                    id: spawn.properties.id
+                });
+            }
+            else if(spawn.name == "potion")
+            {
+                potions.push({
+                    x: Math.round(spawn.x), 
+                    y: Math.round(spawn.y),
+                    inverted: spawn.type == "inverted"
+                });
             }
         }
     }
@@ -117,15 +153,15 @@ class TiledMap extends EntityContainer
         return _mapData;
     }
 
-    public function addTile()
+    public function addFakeTileAt(pX: Int, pY: Int)
     {
-        // TODO
+        _mapData[pY * _mapWidth + pX] = 1;
     }
 
     /**
      * remove a tile at a given coordinates
      */
-    public function removeTileAt(pX: Int, pY: Int):Bool
+    public function removeTileAt(pX: Int, pY: Int)
     {
         var tile : Tile;
         for(i in _entities)
@@ -134,11 +170,11 @@ class TiledMap extends EntityContainer
             if(tile.col == pX && tile.lin == pY)
             {
                 remove(i);
-                _mapData[pY * _mapWidth + pX] = 0;
-                return true;
+                break;
             }
         }
-        return false;
+
+        _mapData[pY * _mapWidth + pX] = 0;
     }
 
 }

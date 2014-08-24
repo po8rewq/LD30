@@ -18,6 +18,7 @@ class UiManager
     }
 
     public var container : EntityContainer;
+    public var container2 : EntityContainer;
 
     var _background : Rect;
     var _text : BasicText;
@@ -42,6 +43,14 @@ class UiManager
     	container.add(_text);
 
     	_isActive = false;
+
+        // -- in game instructions --
+        container2 = new EntityContainer(); container2.visible = false;
+        container2.add( new Rect(695, 0, 105, 28, "#000", 0.5) );
+
+        var txt = new BasicText("[ESC] to restart", 795, 5);
+        txt.setStyle(Main.DEFAULT_FONT, 19, "#FFF", false, TextAlign.RIGHT);
+        container2.add(txt);
     }
 
     public function addText(pText: String, pCallback: Void->Void)
@@ -50,6 +59,7 @@ class UiManager
     	_cback = pCallback;
     	_isActive = true;
     	container.visible = true;
+        container2.visible = false;
 
     	if(_cback == null) // meaning that's the last level
     		_instructions.text = "[F5] to restart";
@@ -63,6 +73,7 @@ class UiManager
     	{
     		_isActive = false;
     		container.visible = false;
+            container2.visible = true;
     		_cback();
     	}
     }

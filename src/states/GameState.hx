@@ -3,6 +3,8 @@ package states;
 import age.display.State;
 import age.core.Global;
 import age.display.EntityContainer;
+import age.core.Input;
+import age.utils.Key;
 
 import entities.Player;
 import entities.Item;
@@ -55,6 +57,7 @@ class GameState extends State
 
     	_uiManager = UiManager.getInstance();
     	add(_uiManager.container);
+    	add(_uiManager.container2);
 
     	// _uiManager.addText("You're controlling two connected lovers. Collect all hearts to open the gate to the next world.", loadNextLevel);
     	loadNextLevel();
@@ -70,14 +73,8 @@ class GameState extends State
 			_itemsManager.addItem(item);
 		}
 		// -- end items creation
-
-    	_player1 = new Player(_map.player1.x, _map.player1.y, Enums.Gravity.NORMAL, "player1");
-        _map.registerCollisions(_player1);
-		_gameContainer.add(_player1);
-
-		_player2 = new Player(_map.player2.x, _map.player2.y, Enums.Gravity.INVERTED, "player2");
-        _map.registerCollisions(_player2);
-		_gameContainer.add(_player2);
+		_player1.visible = true;
+		_player2.visible = true;        
 
 		_door = new Door(_map);
 		_gameContainer.add(_door);
@@ -92,7 +89,7 @@ class GameState extends State
 
     	if(level == null)
     	{
-    		_uiManager.addText("Good Job !! You've finished the game !", null);
+    		_uiManager.addText(LevelData.endText, null);
     	}
     	else
     	{
@@ -101,14 +98,25 @@ class GameState extends State
 	    	_map = new TiledMap(level.file, 16);
 			_gameContainer.add(_map);
 
+			_player1 = new Player(_map.player1.x, _map.player1.y, Enums.Gravity.NORMAL, "player1");
+			_map.registerCollisions(_player1);
+			_gameContainer.add(_player1);
+
+			_player2 = new Player(_map.player2.x, _map.player2.y, _map.player2.inverted ? Enums.Gravity.NORMAL : Enums.Gravity.INVERTED, _map.player2.inverted ? "player2inv" : "player2", _map.player2.inverted);
+	        _map.registerCollisions(_player2);
+			_gameContainer.add(_player2);
+
 			// -- pics
 			var pic : Pic;
 			for(p in _map.picsSpots)
 			{
-				pic = new Pic(p.x, p.y, p.inverted);
+				pic = new Pic(p.x, p.y, p.position, p.inverted);
 				_itemsManager.addPic(pic);
 			}
 			// -- end pics
+
+			_itemsManager.addSwitchs(_map, _player1, _player2);
+			_itemsManager.addPotions(_map.potions, _player1, _player2);
 		}
     }
 
@@ -116,9 +124,19 @@ class GameState extends State
     {
     	if(!_paused)
     	{
+    		// restart
+    		if( Input.released(Key.ESCAPE) )
+    		{
+    			restartLevel();
+    			return;
+    		}
+
     		if( _player1.x <= - _player1.width || _player1.x + _player1.width >= 800 + _player1.width 
     			|| _player2.x <= - _player2.width || _player2.x + _player2.width >= 800 + _player2.width)
-    			restartLevel("Don't try to escape this world !");
+    		{
+    			restartLevel("Don't try to escape this world!");
+    			return;
+    		}
 
 	    	// check items to open the door
 	    	if(_itemsManager.getItemsCount()>0)
@@ -128,7 +146,9 @@ class GameState extends State
 
 	    	if(_itemsManager.getPicsCount() > 0)
 	    		if( _itemsManager.checkCollisionsWithPics(_player1, _player2) )
-	    			restartLevel("You just killed one lover ... try again, but be careful this time ;)");
+	    		{
+	    			restartLevel("You just killed one lover... Try again, but be careful this time.");
+	    		}
 
 	    	// check end level
 	    	if(_door.collidePoint(_player1.x + 11, _player1.y + 2) ) 
@@ -157,7 +177,7 @@ class GameState extends State
     	_uiManager.update();
     }
 
-    function restartLevel(pForceText: String)
+    function restartLevel(?pForceText: String="")
     {
     	_paused = true;
     	_currentLevel--;

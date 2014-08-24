@@ -5,7 +5,6 @@ import age.display.Entity;
 import age.utils.Key;
 import age.utils.GamepadSupport;
 
-// caca
 import entities.Player;
 
 class KeyboardMovements extends BasicMovements
@@ -21,9 +20,13 @@ class KeyboardMovements extends BasicMovements
 
 	var _hero : Player;
 
-	public function new(pEntity: Entity, ?pGravity: Int = 1)
+    var _controlInverted : Bool;
+
+	public function new(pEntity: Entity, ?pGravity: Int = 1, ?pControlInverted: Bool = false)
 	{
 		super(pEntity);
+
+        _controlInverted = pControlInverted;
 
 		_gravity = 0.8 * pGravity;
 
@@ -36,15 +39,20 @@ class KeyboardMovements extends BasicMovements
 
         _hero = cast pEntity;
 	}
+
+    public function switchControls()
+    {
+        _controlInverted = !_controlInverted;
+    }
 	
 	public override function update():Void
 	{
 		// gestion des déplacements
 		var directionX = 0;
 		if( _hero.isMovingLeft() )
-            directionX = -1;
+            directionX = -1 * (_controlInverted ? - 1 : 1);
 		else if( _hero.isMovingRight() )
-            directionX = 1;
+            directionX = 1 * (_controlInverted ? - 1 : 1);
         _dir = directionX;
 
         // gestion du saut

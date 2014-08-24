@@ -20,10 +20,12 @@ class Tile extends Entity
 		//
         var img : String = switch(pIdCell)
         {
-            case 3 : "green";
-            case 4 : "topgreen";
             case 1 : "blue";
             case 2 : "topblue";
+            case 3 : "invertedblue";
+            case 4 : "green";
+            case 5 : "topgreen";
+            case 6 : "invertedgreen";
             default : "";
         }
 

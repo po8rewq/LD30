@@ -17,6 +17,7 @@ class Player extends AnimatedEntity
 	var _direction : Int;
 
 	public var idControls : Int; // identifiant des controles ; -1 => clavier
+	var _controlsInverted : Bool;
 
 	public var gravity(default, null): Enums.Gravity;
 
@@ -26,19 +27,21 @@ class Player extends AnimatedEntity
 	 * pX - pY : positions
 	 * pID : 1 : haut / 2 : bas
 	 */
-	public function new(pX: Int, pY: Int, pGravity: Enums.Gravity, pAnim: String)
+	public function new(pX: Int, pY: Int, pGravity: Enums.Gravity, pAnim: String, ?pControlsInverted:Bool = false)
 	{
 		super(22, 22, pAnim, 2, 6);
 
 		x = pX;
 		y = pY;
+		visible = false;
 
 		idControls = -1; // TODO
 		out = false;
+		_controlsInverted = pControlsInverted;
 
 		gravity = pGravity;
 
-		_movements = new KeyboardMovements(this, Enums.getGravity(gravity) );
+		_movements = new KeyboardMovements(this, Enums.getGravity(gravity), pControlsInverted );
 		addBehavior("movements", _movements);
 	}
 
@@ -60,6 +63,17 @@ class Player extends AnimatedEntity
 		_pauseAnim = !_movements.isMoving();
 
 		super.update();
+	}
+
+	public function changeDirection()
+	{
+		_movements.switchControls();
+	}
+
+	public function setPosition(pX: Int, pY: Int)
+	{
+		x = pX;
+		y = pY;
 	}
 
 	public function isMovingLeft():Bool

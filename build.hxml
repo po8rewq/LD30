@@ -1,0 +1,9 @@
+-cp src
+-main Main.hx
+
+-js bin/js/app.js
+
+#-lib AGE
+-cp /Users/adrien/Documents/Workspace/AGE/src/
+
+#-debug
